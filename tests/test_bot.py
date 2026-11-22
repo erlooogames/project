@@ -300,6 +300,19 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
             "супергруппе", await self.send(f"!mute м 2 {USER.id}", chat=basic)
         )
 
+    async def test_private_start_and_help(self):
+        private_chat = Chat(id=USER.id, type="private")
+        start = await self.send("/start", USER, chat=private_chat)
+        self.assertIn("Справка в личке — !помощь / !help.", start)
+        russian = await self.send("!ПОМОЩЬ", USER, chat=private_chat)
+        self.assertIn("команды модерации в группе", russian)
+        self.assertIn("!мут / !mute", russian)
+        english = await self.send("!help", USER, chat=private_chat)
+        self.assertIn("moderation commands in the group", english)
+        self.assertIn("!mute · !ban", english)
+        self.assertIsNone(await self.send("!mute m 1", USER, chat=private_chat))
+        self.assertIn("!мут / !mute", await self.send("!help", USER))
+
     async def test_owner_claim_uses_private_id_and_cannot_rebind(self):
         owner_chat = Chat(id=OWNER.id, type="private")
         fake_chat = Chat(id=FAKE_OWNER.id, type="private")
